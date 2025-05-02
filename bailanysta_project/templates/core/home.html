@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bailanysta - Connect with Friends</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:home' %}">Bailanysta</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'core:home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Profile</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'users:profile' user.username %}">{{ user.username }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'users:logout' %}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'users:login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'users:register' %}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container my-4">
+        <div class="row">
+            <!-- Left Sidebar -->
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        Quick Links
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="#" class="text-decoration-none">News Feed</a></li>
+                        <li class="list-group-item"><a href="#" class="text-decoration-none">My Profile</a></li>
+                        <li class="list-group-item"><a href="#" class="text-decoration-none">Friends</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Center Content - News Feed -->
+            <div class="col-md-6 mb-4">
+                <!-- Create Post Box -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Create Post</h5>
+                        <div class="mb-3">
+                            <textarea class="form-control" id="postContent" rows="3" placeholder="What's on your mind?"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="postButton">Post</button>
+                    </div>
+                </div>
+
+                <!-- Feed Posts - will be loaded via JavaScript -->
+                <div id="postsFeed">
+                    <!-- Posts will be loaded here from the API -->
+                    <div class="text-center" id="loading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Loading posts...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        Suggested Friends
+                    </div>
+                    <ul class="list-group list-group-flush" id="suggestedFriends">
+                        <!-- Will be populated via JavaScript -->
+                        <li class="list-group-item text-center">Loading suggestions...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center text-muted py-4 mt-5">
+        <div class="container">
+            <p>© 2025 Bailanysta - Connect with friends and the world around you.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script>
+        // JavaScript to fetch posts from API
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch posts
+            fetch('/api/posts/')
+                .then(response => response.json())
+                .then(data => {
+                    const postsFeed = document.getElementById('postsFeed');
+                    // Remove loading indicator
+                    document.getElementById('loading').remove();
+                    
+                    // Display posts
+                    data.forEach(post => {
+                        const postCard = createPostCard(post);
+                        postsFeed.appendChild(postCard);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching posts:', error);
+                    document.getElementById('loading').innerHTML = 'Error loading posts. Please try again later.';
+                });
+                
+            // Handle post creation
+            const postButton = document.getElementById('postButton');
+            const postContentTextarea = document.getElementById('postContent');
+            
+            if (postButton && postContentTextarea) {
+                postButton.addEventListener('click', function() {
+                    const content = postContentTextarea.value.trim();
+                    if (content === '') {
+                        alert('Please enter some content for your post!');
+                        return;
+                    }
+                    
+                    // In a real implementation, this would send a POST request to the API
+                    alert('Post creation will be implemented with the backend API');
+                    postContentTextarea.value = '';
+                });
+            }
+            
+            // Fetch suggested users
+            fetch('/api/users/')
+                .then(response => response.json())
+                .then(data => {
+                    const suggestedFriends = document.getElementById('suggestedFriends');
+                    suggestedFriends.innerHTML = '';
+                    
+                    // Display first 3 users as suggestions
+                    data.slice(0, 3).forEach(user => {
+                        const friendItem = document.createElement('li');
+                        friendItem.className = 'list-group-item d-flex align-items-center';
+                        friendItem.innerHTML = `
+                            <img src="${user.profile_picture || 'https://via.placeholder.com/40'}" class="rounded-circle me-2" alt="Profile Picture" style="width: 40px; height: 40px; object-fit: cover;">
+                            <span>${user.nickname || user.username}</span>
+                        `;
+                        suggestedFriends.appendChild(friendItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching users:', error);
+                    document.getElementById('suggestedFriends').innerHTML = '<li class="list-group-item">Error loading suggestions.</li>';
+                });
+        });
+        
+        // Function to create a post card
+        function createPostCard(post) {
+            const postCard = document.createElement('div');
+            postCard.className = 'card mb-4';
+            
+            // Format date
+            const postDate = new Date(post.created_at);
+            const timeString = postDate.toLocaleDateString() + ' at ' + postDate.toLocaleTimeString();
+            
+            postCard.innerHTML = `
+                <div class="card-body">
+                    <div class="d-flex">
+                        <img src="${post.user.profile_picture || 'https://via.placeholder.com/50'}" class="rounded-circle me-3" alt="Profile Picture" style="width: 50px; height: 50px; object-fit: cover;">
+                        <div>
+                            <h5 class="card-title mb-0">${post.user.nickname || post.user.username}</h5>
+                            <p class="text-muted small">${timeString}</p>
+                        </div>
+                    </div>
+                    <p class="card-text mt-3">${post.content}</p>
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-sm btn-outline-primary">Like</button>
+                        <button class="btn btn-sm btn-outline-secondary">Comment</button>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners to buttons
+            const likeButton = postCard.querySelector('.btn-outline-primary');
+            likeButton.addEventListener('click', function() {
+                this.classList.toggle('active');
+                // In a real implementation, this would send a request to the API
+            });
+            
+            const commentButton = postCard.querySelector('.btn-outline-secondary');
+            commentButton.addEventListener('click', function() {
+                alert('Comment functionality will be implemented later.');
+            });
+            
+            return postCard;
+        }
+    </script>
+</body>
+</html> 
