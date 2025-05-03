@@ -1,0 +1,143 @@
+# BAILANYSTA SOCIAL NETWORK PROJECT DOCUMENTATION
+
+## Project Overview
+Bailanysta is a full-featured social network platform built with Django, JavaScript, and PostgreSQL. This document outlines the step-by-step process of creating the application from scratch.
+
+## Technology Stack
+- **Backend**: Django (Python web framework)
+- **Frontend**: HTML, CSS, JavaScript 
+- **Database**: PostgreSQL
+- **Version Control**: Git
+
+## Development Process
+
+### 1. Project Setup
+1. **Repository Initialization**
+   - Created Git repository for version control
+   - Set up project structure with Django
+
+2. **Environment Configuration**
+   - Configured Django settings
+   - Set up PostgreSQL database connection
+   - Created virtual environment for dependencies
+
+### 2. Backend Development
+
+1. **User Authentication System**
+   - Implemented Django's built-in authentication
+   - Created user registration and login views
+   - Set up profile model extending Django's User model
+
+2. **Data Models**
+   - Designed database schema with Django models:
+     - User profile model
+     - Post model
+     - Comment model
+     - Following/follower relationships
+
+3. **API Development**
+   - Built RESTful API endpoints for:
+     - User profiles
+     - Posts (create, read, update, delete)
+     - Comments
+     - Following/unfollowing users
+     - Liking/unliking posts
+
+4. **Backend Features**
+   - Implemented post creation and viewing
+   - Added comment functionality
+   - Created user follow/unfollow system
+   - Developed like/unlike capability for posts
+   - Built profile update functionality
+
+### 3. Frontend Development
+
+1. **Template Structure**
+   - Created base template with common elements
+   - Developed page-specific templates:
+     - Home/feed page
+     - Profile page
+     - Login/register pages
+     - Connections page
+
+2. **Styling**
+   - Designed responsive UI with Bootstrap
+   - Created custom CSS for specialized components
+   - Implemented dark/light mode toggle
+
+3. **JavaScript Functionality**
+   - Added asynchronous API requests for smoother user experience
+   - Implemented post creation without page reload
+   - Built real-time like/unlike functionality
+   - Created comment system with dynamic updates
+   - Developed follow/unfollow buttons with instant feedback
+
+4. **Connections Visualization**
+   - Created network visualization showing followers and following
+   - Implemented interactive user grid with follow/unfollow capabilities
+   - Added search functionality for finding users
+
+### 4. Challenges and Solutions
+
+1. **Django Migration Issues**
+   - Problem: Migration errors when updating models
+   - Solution: Identified and removed problematic operations, recreated migrations
+
+2. **JavaScript Integration**
+   - Problem: JavaScript linting errors with Django template variables
+   - Solution: Moved Django template variables to data attributes for cleaner JS access
+
+3. **Dark Mode Implementation**
+   - Problem: Text readability issues in dark mode
+   - Solution: Enhanced styling to ensure proper color changes for text elements
+
+4. **API Integration**
+   - Problem: Connecting frontend to backend seamlessly
+   - Solution: Created consistent API structure and JavaScript functions to handle requests
+
+### 5. Feature Implementation Details
+
+1. **Post System**
+   - Posts displayed in reverse chronological order
+   - Each post shows author, content, timestamp, likes count
+   - Post cards include like and comment buttons
+   - Posts can be created from the home page
+
+2. **Comment System**
+   - Comments appear under respective posts
+   - Users can add new comments through a form
+   - Comments display author and timestamp
+
+3. **Profile System**
+   - Profiles show user information and statistics
+   - Users can update their profile information and picture
+   - Profile pages display user's posts
+   - Following/followers counts shown on profile
+
+4. **Following System**
+   - Users can follow/unfollow others
+   - Home feed shows posts from followed users
+   - Connections page visualizes network relationships
+
+5. **User Interface**
+   - Responsive design works on all device sizes
+   - Dark/light mode toggle for user preference
+   - Consistent styling throughout the application
+   - Interactive elements with hover effects and transitions
+
+### 6. Deployment
+
+1. **Database Configuration**
+   - Finalized database schema
+   - Created production database
+
+2. **Static Files**
+   - Configured static file serving
+   - Optimized assets for production
+
+3. **Security Measures**
+   - Secured sensitive information with environment variables
+   - Implemented proper authentication checks
+
+## Conclusion
+Bailanysta is now a fully functional social network with user authentication, post creation, commenting, following capabilities, and responsive design with dark/light mode toggle. The UI has been polished with consistent styling and attention to user experience. 
