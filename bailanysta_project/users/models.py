@@ -5,7 +5,10 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    profile_picture = models.ImageField(verbose_name='Profile Picture', upload_to='profile_pictures/', null=True, blank=True)
+    profile_picture = models.ImageField(verbose_name='Profile Picture', 
+                                        upload_to='profile_pics', 
+                                        default='static/images/default_avatar.jpg', 
+                                        blank=True)
     nickname = models.CharField(verbose_name='Nickname', max_length=255, null=True, blank=True)
     bio = models.TextField(verbose_name='Bio', max_length=500, null=True, blank=True)
     user_followers = models.ManyToManyField('self', 

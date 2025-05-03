@@ -26,6 +26,11 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="{% url 'users:profile' user.username %}">Profile</a>
                     </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users:connections' %}">Connections</a>
+                    </li>
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
@@ -58,7 +63,25 @@
                         {% if profile_user.profile_picture %}
                             <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle img-fluid mb-3" alt="Profile Picture" style="width: 150px; height: 150px; object-fit: cover;">
                         {% else %}
-                            <img src="https://via.placeholder.com/150" class="rounded-circle img-fluid mb-3" alt="Profile Picture">
+                            <img src="{% static 'img/default-avatar.png' %}" class="rounded-circle img-fluid mb-3" alt="Default Profile Picture" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% endif %}
+                        
+                        {% if is_own_profile %}
+                        <div class="mt-2 mb-4">
+                            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#profilePictureForm" aria-expanded="false">
+                                Change Profile Picture
+                            </button>
+                            
+                            <div class="collapse mt-3" id="profilePictureForm">
+                                <div class="card card-body">
+                                    <form method="post" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        {{ picture_form.as_p }}
+                                        <button type="submit" class="btn btn-primary mt-2">Upload Picture</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                         {% endif %}
                         <h3 class="card-title">{{ profile_user.get_full_name }}</h3>
                         <p class="text-muted">@{{ profile_user.username }}</p>
@@ -74,17 +97,19 @@
                             </div>
                             <div>
                                 <h5>{{ profile_user.user_followers.count }}</h5>
-                                <small class="text-muted">Followers</small>
+                                <small class="text-muted"><a href="{% url 'users:connections' %}" class="text-decoration-none text-muted">Followers</a></small>
                             </div>
                             <div>
                                 <h5>{{ profile_user.user_following.count }}</h5>
-                                <small class="text-muted">Following</small>
+                                <small class="text-muted"><a href="{% url 'users:connections' %}" class="text-decoration-none text-muted">Following</a></small>
                             </div>
                         </div>
                         {% if user == profile_user %}
-                            <button class="btn btn-primary w-100 mt-4">Edit Profile</button>
+                            <button class="btn btn-primary w-100 mt-4" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
                         {% else %}
-                            <button class="btn btn-primary w-100 mt-4">Follow</button>
+                            <button class="btn btn-primary w-100 mt-4" id="followButton" data-user-id="{{ profile_user.id }}">
+                                {% if user in profile_user.user_followers.all %}Unfollow{% else %}Follow{% endif %}
+                            </button>
                         {% endif %}
                     </div>
                 </div>
@@ -145,6 +170,65 @@
         </div>
     </footer>
 
+    <!-- Edit Profile Modal -->
+    {% if user == profile_user %}
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab" aria-controls="basic" aria-selected="true">Basic Info</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">Change Password</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content pt-3" id="profileTabsContent">
+                        <div class="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
+                            <form id="profileUpdateForm">
+                                <div class="mb-3">
+                                    <label for="nickname" class="form-label">Nickname</label>
+                                    <input type="text" class="form-control" id="nickname" value="{{ profile_user.nickname|default:'' }}" placeholder="Your display name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="bio" class="form-label">Bio</label>
+                                    <textarea class="form-control" id="bio" rows="3" placeholder="Tell us about yourself">{{ profile_user.bio|default:'' }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <div class="alert mt-3" id="profileUpdateStatus" style="display:none;"></div>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                            <form id="passwordChangeForm">
+                                <div class="mb-3">
+                                    <label for="oldPassword" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="oldPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="newPassword" required minlength="8">
+                                    <div class="form-text">Password must be at least 8 characters long</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Change Password</button>
+                                <div class="alert mt-3" id="passwordChangeStatus" style="display:none;"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JavaScript -->
@@ -153,6 +237,7 @@
             const postButton = document.getElementById('postButton');
             const postContentTextarea = document.getElementById('postContent');
             
+            // Post creation functionality
             if (postButton && postContentTextarea) {
                 postButton.addEventListener('click', function() {
                     const content = postContentTextarea.value.trim();
@@ -166,7 +251,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                            'X-CSRFToken': getCsrfToken()
                         },
                         body: JSON.stringify({
                             content: content
@@ -185,7 +270,188 @@
                     });
                 });
             }
+            
+            // Follow button functionality
+            const followButton = document.getElementById('followButton');
+            if (followButton) {
+                followButton.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user-id');
+                    
+                    fetch(`/api/users/${userId}/follow/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'following') {
+                            followButton.textContent = 'Unfollow';
+                        } else if (data.status === 'unfollowed') {
+                            followButton.textContent = 'Follow';
+                        }
+                        
+                        // Refresh the followers count
+                        fetch(`/api/users/${userId}/`)
+                            .then(response => response.json())
+                            .then(userData => {
+                                // Update followers count in the UI
+                                const followersCountElement = document.querySelector('.d-flex.justify-content-around h5:nth-child(1)');
+                                if (followersCountElement) {
+                                    followersCountElement.textContent = userData.followers_count;
+                                }
+                            });
+                    })
+                    .catch(error => {
+                        console.error('Error following user:', error);
+                        alert('Error following user. Please try again.');
+                    });
+                });
+            }
+            
+            // Profile update form
+            const profileUpdateForm = document.getElementById('profileUpdateForm');
+            if (profileUpdateForm) {
+                profileUpdateForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const nickname = document.getElementById('nickname').value.trim();
+                    const bio = document.getElementById('bio').value.trim();
+                    
+                    fetch('/api/users/update_profile/', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            nickname: nickname,
+                            bio: bio
+                        })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            showAlert('profileUpdateStatus', 'Profile updated successfully!', 'success');
+                            return response.json();
+                        } else {
+                            showAlert('profileUpdateStatus', 'Failed to update profile. Please try again.', 'danger');
+                            throw new Error('Failed to update profile');
+                        }
+                    })
+                    .then(data => {
+                        // Update UI with new data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    })
+                    .catch(error => {
+                        console.error('Error updating profile:', error);
+                    });
+                });
+            }
+            
+            // Password change form
+            const passwordChangeForm = document.getElementById('passwordChangeForm');
+            if (passwordChangeForm) {
+                passwordChangeForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const oldPassword = document.getElementById('oldPassword').value;
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    
+                    if (newPassword !== confirmPassword) {
+                        showAlert('passwordChangeStatus', 'New passwords do not match!', 'danger');
+                        return;
+                    }
+                    
+                    fetch('/api/users/change_password/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            old_password: oldPassword,
+                            new_password: newPassword
+                        })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            showAlert('passwordChangeStatus', 'Password changed successfully!', 'success');
+                            passwordChangeForm.reset();
+                        } else {
+                            return response.json().then(data => {
+                                let errorMsg = 'Failed to change password.';
+                                if (data.old_password) {
+                                    errorMsg = data.old_password[0];
+                                }
+                                showAlert('passwordChangeStatus', errorMsg, 'danger');
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error changing password:', error);
+                        showAlert('passwordChangeStatus', 'An error occurred. Please try again.', 'danger');
+                    });
+                });
+            }
+            
+            // Like functionality for posts
+            document.querySelectorAll('.btn-outline-primary').forEach(button => {
+                button.addEventListener('click', function() {
+                    const postId = this.closest('.card').getAttribute('data-post-id');
+                    if (postId) {
+                        fetch(`/api/posts/${postId}/like/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCsrfToken()
+                            }
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                this.classList.toggle('active');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error liking post:', error);
+                        });
+                    }
+                });
+            });
         });
+        
+        // Helper function to show alert messages
+        function showAlert(elementId, message, type) {
+            const alertElement = document.getElementById(elementId);
+            alertElement.textContent = message;
+            alertElement.className = `alert alert-${type} mt-3`;
+            alertElement.style.display = 'block';
+            
+            setTimeout(() => {
+                alertElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Helper function to get CSRF token
+        function getCsrfToken() {
+            const csrfCookie = document.cookie.split(';')
+                .find(cookie => cookie.trim().startsWith('csrftoken='));
+            
+            if (csrfCookie) {
+                return csrfCookie.split('=')[1];
+            }
+            
+            // If no cookie found, try to find the token in a meta tag
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (csrfMeta) {
+                return csrfMeta.getAttribute('content');
+            }
+            
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
     </script>
 </body>
 </html> 

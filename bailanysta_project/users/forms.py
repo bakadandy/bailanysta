@@ -10,3 +10,14 @@ class UserRegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2')
+
+class ProfilePictureForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['profile_picture']
+        widgets = {
+            'profile_picture': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+        }
+        labels = {
+            'profile_picture': 'Select a new profile picture',
+        }

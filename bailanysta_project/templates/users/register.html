@@ -101,7 +101,7 @@
                             </div>
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="termsAgreement" required>
-                                <label class="form-check-label" for="termsAgreement">I agree to the <a href="#" class="text-decoration-none">Terms and Conditions</a></label>
+                                <label class="form-check-label" for="termsAgreement">I agree to the <a href="{% url 'users:terms_conditions' %}" class="text-decoration-none">Terms and Conditions</a></label>
                             </div>
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">Register</button>
