@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: bailanysta
+    env: python
+    buildCommand: pip install -r requirements.txt && python bailanysta_project/manage.py collectstatic --noinput
+    startCommand: cd bailanysta_project && gunicorn bailanysta_project.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bailanysta_db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DJANGO_SETTINGS_MODULE
+        value: bailanysta_project.settings
+
+databases:
+  - name: bailanysta_db
+    databaseName: bailanysta
+    user: bailanysta
+    plan: free 

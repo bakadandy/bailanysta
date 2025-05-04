@@ -1,0 +1,1 @@
+web: cd bailanysta_project && gunicorn bailanysta_project.wsgi:application --log-file - 
