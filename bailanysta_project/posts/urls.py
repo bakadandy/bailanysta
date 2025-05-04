@@ -6,4 +6,5 @@ app_name = 'posts'
 urlpatterns = [
     path('', PostViewSet.as_view({'get': 'list'}), name='post_list'),
     path('<int:pk>/', PostViewSet.as_view({'get': 'retrieve'}), name='post_detail'),
+    path('search/hashtags/', PostViewSet.as_view({'get': 'search_hashtags'}), name='search_hashtags'),
 ]

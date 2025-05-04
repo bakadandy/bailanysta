@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if request.GET.hashtag %}
+    Posts with #{{ request.GET.hashtag }}
+  {% else %}
+    All Posts
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      {% if request.GET.hashtag %}
+        <div class="mb-4">
+          <h2>Posts with hashtag <span class="badge bg-primary">#{{ request.GET.hashtag }}</span></h2>
+          <a href="{% url 'core:home' %}" class="btn btn-outline-secondary btn-sm">Back to Home</a>
+        </div>
+      {% else %}
+        <h2>All Posts</h2>
+      {% endif %}
+
+      <div id="postsList">
+        {% for post in posts %}
+          <div class="card mb-4 post-card">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <img src="{{ post.user.profile_picture.url|default:'https://via.placeholder.com/50' }}" class="rounded-circle me-2" width="40" height="40" alt="{{ post.user.username }}">
+                <div>
+                  <h5 class="card-title mb-0">
+                    <a href="{% url 'users:profile' post.user.username %}" class="text-decoration-none">{{ post.user.username }}</a>
+                  </h5>
+                  <small class="text-muted">{{ post.created_at|date:"F d, Y H:i" }}</small>
+                </div>
+              </div>
+              
+              <!-- Post Content -->
+              <p class="card-text post-content">{{ post.content }}</p>
+              
+              <!-- Hashtags -->
+              {% if post.hashtags %}
+              <div class="mb-3">
+                {% for tag in post.hashtags.split %}
+                  <a href="{% url 'posts:post_list' %}?hashtag={{ tag }}" class="badge bg-primary text-decoration-none me-1">#{{ tag }}</a>
+                {% endfor %}
+              </div>
+              {% endif %}
+              
+              <!-- Post Actions -->
+              <div class="d-flex justify-content-between">
+                <div>
+                  <button class="btn btn-outline-primary btn-sm like-button" 
+                          data-post-id="{{ post.id }}" 
+                          data-liked="{% if request.user in post.likes.all %}true{% else %}false{% endif %}">
+                    <i class="bi {% if request.user in post.likes.all %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                    <span class="like-count">{{ post.likes.count }}</span>
+                  </button>
+                  <button class="btn btn-outline-secondary btn-sm comment-button"
+                          data-post-id="{{ post.id }}">
+                    <i class="bi bi-chat"></i>
+                    <span class="comment-count">{{ post.comments.count }}</span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Comments Section (Initially Collapsed) -->
+              <div class="comments-section mt-3" id="comments-{{ post.id }}" style="display: none;">
+                <hr>
+                <h6>Comments</h6>
+                <div class="comments-list mb-3">
+                  {% for comment in post.comments.all %}
+                    <div class="comment mb-2">
+                      <div class="d-flex">
+                        <img src="{{ comment.user.profile_picture.url|default:'https://via.placeholder.com/30' }}" class="rounded-circle me-2" width="30" height="30">
+                        <div>
+                          <p class="mb-0">
+                            <strong>{{ comment.user.username }}</strong>
+                            <small class="text-muted ms-2">{{ comment.created_at|date:"M d, H:i" }}</small>
+                          </p>
+                          <p class="mb-0">{{ comment.content }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  {% empty %}
+                    <p class="text-muted">No comments yet.</p>
+                  {% endfor %}
+                </div>
+                
+                {% if request.user.is_authenticated %}
+                  <form class="comment-form" data-post-id="{{ post.id }}">
+                    <div class="input-group">
+                      <input type="text" class="form-control comment-input" placeholder="Write a comment...">
+                      <button class="btn btn-primary" type="submit">Post</button>
+                    </div>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="alert alert-info">
+            {% if request.GET.hashtag %}
+              No posts found with hashtag #{{ request.GET.hashtag }}
+            {% else %}
+              No posts available.
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page=1{% if request.GET.hashtag %}&hashtag={{ request.GET.hashtag }}{% endif %}">&laquo; First</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.hashtag %}&hashtag={{ request.GET.hashtag }}{% endif %}">Previous</a>
+            </li>
+          {% endif %}
+          
+          <li class="page-item active">
+            <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+          </li>
+          
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.hashtag %}&hashtag={{ request.GET.hashtag }}{% endif %}">Next</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.hashtag %}&hashtag={{ request.GET.hashtag }}{% endif %}">Last &raquo;</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  // Process hashtags in post content after page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    // Make hashtags clickable in post content
+    document.querySelectorAll('.post-content').forEach(function(element) {
+      element.innerHTML = element.innerHTML.replace(/#(\w+)/g, '<a href="/posts/?hashtag=$1" class="hashtag">#$1</a>');
+    });
+    
+    // Toggle comments section
+    document.querySelectorAll('.comment-button').forEach(function(button) {
+      button.addEventListener('click', function() {
+        const postId = button.getAttribute('data-post-id');
+        const commentsSection = document.getElementById('comments-' + postId);
+        if (commentsSection.style.display === 'none') {
+          commentsSection.style.display = 'block';
+        } else {
+          commentsSection.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
+{% endblock %} 

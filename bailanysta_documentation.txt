@@ -8,6 +8,7 @@ Bailanysta is a full-featured social network platform built with Django, JavaScr
 - **Frontend**: HTML, CSS, JavaScript 
 - **Database**: PostgreSQL
 - **Version Control**: Git
+- **AI Integration**: OpenAI API for content generation
 
 ## Development Process
 
@@ -125,6 +126,18 @@ Bailanysta is a full-featured social network platform built with Django, JavaScr
    - Consistent styling throughout the application
    - Interactive elements with hover effects and transitions
 
+6. **AI Integration Features**
+   - Integrated OpenAI API for content generation
+   - Added AI-powered post content generation
+   - Implemented hashtag suggestion system
+   - Created interface for generating content from simple prompts
+
+7. **Hashtag System**
+   - Added support for hashtags in posts
+   - Implemented hashtag extraction from post content
+   - Built search functionality for finding posts by hashtags
+   - Created clickable hashtags that lead to filtered post views
+
 ### 6. Deployment
 
 1. **Database Configuration**
@@ -139,5 +152,9 @@ Bailanysta is a full-featured social network platform built with Django, JavaScr
    - Secured sensitive information with environment variables
    - Implemented proper authentication checks
 
+4. **API Key Management**
+   - Used environment variables for OpenAI API keys
+   - Created example configuration files
+
 ## Conclusion
-Bailanysta is now a fully functional social network with user authentication, post creation, commenting, following capabilities, and responsive design with dark/light mode toggle. The UI has been polished with consistent styling and attention to user experience. 
+Bailanysta is now a fully functional social network with user authentication, post creation, commenting, following capabilities, and responsive design with dark/light mode toggle. The UI has been polished with consistent styling and attention to user experience. Advanced features like AI content generation and hashtag functionality enhance the user experience and engagement with the platform. 

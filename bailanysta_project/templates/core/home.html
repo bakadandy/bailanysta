@@ -34,6 +34,11 @@
                     </li>
                     {% endif %}
                 </ul>
+                <!-- Hashtag Search Form -->
+                <form class="d-flex me-2" id="hashtag-search-form">
+                    <input class="form-control me-2" type="search" placeholder="Search hashtags" id="hashtag-search-input">
+                    <button class="btn btn-outline-light" type="submit">Search</button>
+                </form>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
@@ -87,8 +92,27 @@
                         <h5 class="card-title">Create Post</h5>
                         <div class="mb-3">
                             <textarea class="form-control" id="postContent" rows="3" placeholder="What's on your mind?"></textarea>
+                            <div id="hashtag-suggestions" class="mt-2" style="display: none;"></div>
                         </div>
-                        <button type="button" class="btn btn-primary" id="postButton">Post</button>
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-primary" id="postButton">Post</button>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-primary" id="suggest-hashtags-btn">Suggest Hashtags</button>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#aiAssistCollapse">AI Assist</button>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Content Generation Collapse -->
+                        <div class="collapse mt-3" id="aiAssistCollapse">
+                            <div class="card card-body">
+                                <h6>Generate Content with AI</h6>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="ai-prompt-input" placeholder="Enter a topic...">
+                                    <button class="btn btn-primary" id="ai-generate-btn">Generate with AI</button>
+                                </div>
+                                <small class="text-muted">AI will generate a post based on your topic</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% endif %}
@@ -120,6 +144,22 @@
                         <!-- Will be populated via JavaScript -->
                         <li class="list-group-item text-center">Loading suggestions...</li>
                     </ul>
+                </div>
+
+                <!-- Popular Hashtags Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        Popular Hashtags
+                    </div>
+                    <div class="card-body" id="popularHashtags">
+                        <div class="d-flex flex-wrap">
+                            <!-- Will be populated dynamically -->
+                            <span class="badge bg-primary me-2 mb-2">#welcome</span>
+                            <span class="badge bg-primary me-2 mb-2">#trending</span>
+                            <span class="badge bg-primary me-2 mb-2">#social</span>
+                            <span class="badge bg-primary me-2 mb-2">#network</span>
+                        </div>
+                    </div>
                 </div>
 
                 {% if user.is_authenticated %}
@@ -174,6 +214,8 @@
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AI Features JavaScript -->
+    <script src="{% static 'js/ai_features.js' %}"></script>
     <!-- Custom JavaScript for dark mode-->
     <script>
         // Global variables

@@ -1,157 +1,186 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ profile_user.username }} - Bailanysta</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'core:home' %}">Bailanysta</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'core:home' %}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'users:profile' user.username %}">Profile</a>
-                    </li>
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'users:connections' %}">Connections</a>
-                    </li>
-                    {% endif %}
-                </ul>
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'users:profile' user.username %}">{{ user.username }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'users:logout' %}">Logout</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'users:login' %}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'users:register' %}">Register</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
+{% extends 'base.html' %}
+{% load static %}
 
-    <!-- Main Content -->
-    <div class="container my-4">
-        <div class="row">
-            <!-- Profile Info -->
-            <div class="col-lg-4 mb-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        {% if profile_user.profile_picture %}
-                            <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle img-fluid mb-3" alt="Profile Picture" style="width: 150px; height: 150px; object-fit: cover;">
-                        {% else %}
-                            <img src="{% static 'img/default-avatar.png' %}" class="rounded-circle img-fluid mb-3" alt="Default Profile Picture" style="width: 150px; height: 150px; object-fit: cover;">
-                        {% endif %}
+{% block title %}{{ profile_user.username }} - Bailanysta{% endblock %}
+
+{% block content %}
+<!-- Main Content -->
+<div class="container my-4">
+    <div class="row">
+        <!-- Profile Info -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if profile_user.profile_picture %}
+                        <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle img-fluid mb-3" alt="Profile Picture" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'img/default-avatar.png' %}" class="rounded-circle img-fluid mb-3" alt="Default Profile Picture" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% endif %}
+                    
+                    {% if is_own_profile %}
+                    <div class="mt-2 mb-4">
+                        <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#profilePictureForm" aria-expanded="false">
+                            Change Profile Picture
+                        </button>
                         
-                        {% if is_own_profile %}
-                        <div class="mt-2 mb-4">
-                            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#profilePictureForm" aria-expanded="false">
-                                Change Profile Picture
-                            </button>
-                            
-                            <div class="collapse mt-3" id="profilePictureForm">
-                                <div class="card card-body">
-                                    <form method="post" enctype="multipart/form-data">
-                                        {% csrf_token %}
-                                        {{ picture_form.as_p }}
-                                        <button type="submit" class="btn btn-primary mt-2">Upload Picture</button>
-                                    </form>
-                                </div>
+                        <div class="collapse mt-3" id="profilePictureForm">
+                            <div class="card card-body">
+                                <form method="post" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    {{ picture_form.as_p }}
+                                    <button type="submit" class="btn btn-primary mt-2">Upload Picture</button>
+                                </form>
                             </div>
                         </div>
-                        {% endif %}
-                        <h3 class="card-title">{{ profile_user.get_full_name }}</h3>
-                        <p class="text-muted">@{{ profile_user.username }}</p>
-                        {% if profile_user.bio %}
-                            <p>{{ profile_user.bio }}</p>
-                        {% else %}
-                            <p>No bio available</p>
-                        {% endif %}
-                        <div class="d-flex justify-content-around mt-4">
-                            <div>
-                                <h5>{{ posts.count }}</h5>
-                                <small class="text-muted">Posts</small>
-                            </div>
-                            <div>
-                                <h5>{{ profile_user.user_followers.count }}</h5>
-                                <small class="text-muted"><a href="{% url 'users:connections' %}" class="text-decoration-none text-muted">Followers</a></small>
-                            </div>
-                            <div>
-                                <h5>{{ profile_user.user_following.count }}</h5>
-                                <small class="text-muted"><a href="{% url 'users:connections' %}" class="text-decoration-none text-muted">Following</a></small>
-                            </div>
-                        </div>
-                        {% if user == profile_user %}
-                            <button class="btn btn-primary w-100 mt-4" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
-                        {% else %}
-                            <button class="btn btn-primary w-100 mt-4" id="followButton" data-user-id="{{ profile_user.id }}">
-                                {% if user in profile_user.user_followers.all %}Unfollow{% else %}Follow{% endif %}
-                            </button>
-                        {% endif %}
                     </div>
+                    {% endif %}
+                    <h3 class="card-title">{{ profile_user.get_full_name }}</h3>
+                    <p class="text-muted">@{{ profile_user.username }}</p>
+                    {% if profile_user.bio %}
+                        <p>{{ profile_user.bio }}</p>
+                    {% else %}
+                        <p>No bio available</p>
+                    {% endif %}
+                    <div class="d-flex justify-content-around mt-4">
+                        <div>
+                            <h5>{{ posts.count }}</h5>
+                            <small class="text-muted">Posts</small>
+                        </div>
+                        <div>
+                            <h5>{{ profile_user.user_followers.count }}</h5>
+                            <small class="text-muted"><a href="{% url 'users:connections' %}" class="text-decoration-none text-muted">Followers</a></small>
+                        </div>
+                        <div>
+                            <h5>{{ profile_user.user_following.count }}</h5>
+                            <small class="text-muted"><a href="{% url 'users:connections' %}" class="text-decoration-none text-muted">Following</a></small>
+                        </div>
+                    </div>
+                    {% if user == profile_user %}
+                        <button class="btn btn-primary w-100 mt-4" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+                    {% else %}
+                        <button class="btn btn-primary w-100 mt-4" id="followButton" data-user-id="{{ profile_user.id }}">
+                            {% if user in profile_user.user_followers.all %}Unfollow{% else %}Follow{% endif %}
+                        </button>
+                    {% endif %}
                 </div>
             </div>
+        </div>
 
-            <!-- User Posts -->
-            <div class="col-lg-8">
-                {% if user == profile_user %}
-                    <!-- Create Post Box -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Create Post</h5>
-                            <div class="mb-3">
-                                <textarea class="form-control" id="postContent" rows="3" placeholder="What's on your mind?"></textarea>
-                            </div>
+        <!-- User Posts -->
+        <div class="col-lg-8">
+            {% if user == profile_user %}
+                <!-- Create Post Box -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Create Post</h5>
+                        <div class="mb-3">
+                            <textarea class="form-control" id="postContent" rows="3" placeholder="What's on your mind?"></textarea>
+                            <div id="hashtag-suggestions" class="mt-2" style="display: none;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
                             <button type="button" class="btn btn-primary" id="postButton">Post</button>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-primary" id="suggest-hashtags-btn">Suggest Hashtags</button>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#aiAssistCollapse">AI Assist</button>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Content Generation Collapse -->
+                        <div class="collapse mt-3" id="aiAssistCollapse">
+                            <div class="card card-body">
+                                <div class="mb-3">
+                                    <label for="ai-prompt-input" class="form-label">What would you like to post about?</label>
+                                    <input type="text" class="form-control" id="ai-prompt-input" placeholder="E.g., My thoughts on AI technology">
+                                </div>
+                                <button type="button" class="btn btn-primary" id="ai-generate-btn">Generate with AI</button>
+                            </div>
                         </div>
                     </div>
-                {% endif %}
+                </div>
+            {% endif %}
 
-                <!-- Posts Section -->
-                <h4 class="mb-3">{{ profile_user.username }}'s Posts</h4>
-                
+            <!-- Posts Section -->
+            <h4 class="mb-3">{{ profile_user.username }}'s Posts</h4>
+            
+            <div id="userPosts">
                 {% if posts %}
                     {% for post in posts %}
-                        <div class="card mb-4">
+                        <div class="card mb-4 post-card">
                             <div class="card-body">
-                                <div class="d-flex">
+                                <div class="d-flex align-items-center mb-3">
                                     {% if profile_user.profile_picture %}
-                                        <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle me-3" alt="Profile Picture" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle me-2" width="40" height="40" alt="{{ profile_user.username }}">
                                     {% else %}
-                                        <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="Profile Picture">
+                                        <img src="https://via.placeholder.com/50" class="rounded-circle me-2" width="40" height="40" alt="{{ profile_user.username }}">
                                     {% endif %}
                                     <div>
-                                        <h5 class="card-title mb-0">{{ profile_user.get_full_name }}</h5>
-                                        <p class="text-muted small">Posted {{ post.created_at|timesince }} ago</p>
+                                        <h5 class="card-title mb-0">
+                                            <a href="{% url 'users:profile' post.user.username %}" class="text-decoration-none">{{ post.user.username }}</a>
+                                        </h5>
+                                        <small class="text-muted">{{ post.created_at|date:"F d, Y H:i" }}</small>
                                     </div>
                                 </div>
-                                <p class="card-text mt-3">{{ post.content }}</p>
+                                
+                                <!-- Post Content -->
+                                <p class="card-text post-content">{{ post.content }}</p>
+                                
+                                <!-- Hashtags -->
+                                {% if post.hashtags %}
+                                <div class="mb-3">
+                                    {% for tag in post.hashtags.split %}
+                                        <a href="{% url 'posts:post_list' %}?hashtag={{ tag }}" class="badge bg-primary text-decoration-none me-1">#{{ tag }}</a>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Post Actions -->
                                 <div class="d-flex justify-content-between">
-                                    <button class="btn btn-sm btn-outline-primary">Like</button>
-                                    <button class="btn btn-sm btn-outline-secondary">Comment</button>
+                                    <div>
+                                        <button class="btn btn-outline-primary btn-sm like-button" 
+                                                data-post-id="{{ post.id }}" 
+                                                data-liked="{% if request.user in post.likes.all %}true{% else %}false{% endif %}">
+                                            <i class="bi {% if request.user in post.likes.all %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                                            <span class="like-count">{{ post.likes.count }}</span>
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm comment-button"
+                                                data-post-id="{{ post.id }}">
+                                            <i class="bi bi-chat"></i>
+                                            <span class="comment-count">{{ post.comments.count }}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Comments Section (Initially Collapsed) -->
+                                <div class="comments-section mt-3" id="comments-{{ post.id }}" style="display: none;">
+                                    <hr>
+                                    <h6>Comments</h6>
+                                    <div class="comments-list mb-3">
+                                        {% for comment in post.comments.all %}
+                                            <div class="comment mb-2">
+                                                <div class="d-flex">
+                                                    <img src="{{ comment.user.profile_picture.url|default:'https://via.placeholder.com/30' }}" class="rounded-circle me-2" width="30" height="30">
+                                                    <div>
+                                                        <p class="mb-0">
+                                                            <strong>{{ comment.user.username }}</strong>
+                                                            <small class="text-muted ms-2">{{ comment.created_at|date:"M d, H:i" }}</small>
+                                                        </p>
+                                                        <p class="mb-0">{{ comment.content }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% empty %}
+                                            <p class="text-muted">No comments yet.</p>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    {% if user.is_authenticated %}
+                                        <form class="comment-form" data-post-id="{{ post.id }}">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control comment-input" placeholder="Write a comment...">
+                                                <button class="btn btn-primary" type="submit">Post</button>
+                                            </div>
+                                        </form>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -162,296 +191,94 @@
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Footer -->
-    <footer class="bg-light text-center text-muted py-4 mt-5">
-        <div class="container">
-            <p>© 2025 Bailanysta - Connect with friends and the world around you.</p>
-        </div>
-    </footer>
-
-    <!-- Edit Profile Modal -->
-    {% if user == profile_user %}
-    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <ul class="nav nav-tabs" id="profileTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab" aria-controls="basic" aria-selected="true">Basic Info</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">Change Password</button>
-                        </li>
-                    </ul>
-                    <div class="tab-content pt-3" id="profileTabsContent">
-                        <div class="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
-                            <form id="profileUpdateForm">
-                                <div class="mb-3">
-                                    <label for="nickname" class="form-label">Nickname</label>
-                                    <input type="text" class="form-control" id="nickname" value="{{ profile_user.nickname|default:'' }}" placeholder="Your display name">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="bio" class="form-label">Bio</label>
-                                    <textarea class="form-control" id="bio" rows="3" placeholder="Tell us about yourself">{{ profile_user.bio|default:'' }}</textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                                <div class="alert mt-3" id="profileUpdateStatus" style="display:none;"></div>
-                            </form>
-                        </div>
-                        <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
-                            <form id="passwordChangeForm">
-                                <div class="mb-3">
-                                    <label for="oldPassword" class="form-label">Current Password</label>
-                                    <input type="password" class="form-control" id="oldPassword" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="newPassword" class="form-label">New Password</label>
-                                    <input type="password" class="form-control" id="newPassword" required minlength="8">
-                                    <div class="form-text">Password must be at least 8 characters long</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                                    <input type="password" class="form-control" id="confirmPassword" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Change Password</button>
-                                <div class="alert mt-3" id="passwordChangeStatus" style="display:none;"></div>
-                            </form>
-                        </div>
+<!-- Edit Profile Modal -->
+{% if user == profile_user %}
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab" aria-controls="basic" aria-selected="true">Basic Info</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">Change Password</button>
+                    </li>
+                </ul>
+                <div class="tab-content pt-3" id="profileTabsContent">
+                    <div class="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
+                        <form id="profileUpdateForm">
+                            <div class="mb-3">
+                                <label for="nickname" class="form-label">Nickname</label>
+                                <input type="text" class="form-control" id="nickname" value="{{ profile_user.nickname|default:'' }}" placeholder="Your display name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" rows="3" placeholder="Tell us about yourself">{{ profile_user.bio|default:'' }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" value="{{ profile_user.location|default:'' }}" placeholder="Where are you based?">
+                            </div>
+                            <div class="mb-3">
+                                <label for="website" class="form-label">Website</label>
+                                <input type="url" class="form-control" id="website" value="{{ profile_user.website|default:'' }}" placeholder="https://example.com">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                        <form id="passwordUpdateForm">
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="currentPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const postButton = document.getElementById('postButton');
-            const postContentTextarea = document.getElementById('postContent');
-            
-            // Post creation functionality
-            if (postButton && postContentTextarea) {
-                postButton.addEventListener('click', function() {
-                    const content = postContentTextarea.value.trim();
-                    if (content === '') {
-                        alert('Please enter some content for your post!');
-                        return;
-                    }
-                    
-                    // In a real implementation, send data to the server
-                    fetch('/api/posts/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCsrfToken()
-                        },
-                        body: JSON.stringify({
-                            content: content
-                        })
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            window.location.reload();
-                        } else {
-                            alert('There was an error creating your post.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('There was an error creating your post.');
-                    });
-                });
-            }
-            
-            // Follow button functionality
-            const followButton = document.getElementById('followButton');
-            if (followButton) {
-                followButton.addEventListener('click', function() {
-                    const userId = this.getAttribute('data-user-id');
-                    
-                    fetch(`/api/users/${userId}/follow/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCsrfToken()
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'following') {
-                            followButton.textContent = 'Unfollow';
-                        } else if (data.status === 'unfollowed') {
-                            followButton.textContent = 'Follow';
-                        }
-                        
-                        // Refresh the followers count
-                        fetch(`/api/users/${userId}/`)
-                            .then(response => response.json())
-                            .then(userData => {
-                                // Update followers count in the UI
-                                const followersCountElement = document.querySelector('.d-flex.justify-content-around h5:nth-child(1)');
-                                if (followersCountElement) {
-                                    followersCountElement.textContent = userData.followers_count;
-                                }
-                            });
-                    })
-                    .catch(error => {
-                        console.error('Error following user:', error);
-                        alert('Error following user. Please try again.');
-                    });
-                });
-            }
-            
-            // Profile update form
-            const profileUpdateForm = document.getElementById('profileUpdateForm');
-            if (profileUpdateForm) {
-                profileUpdateForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const nickname = document.getElementById('nickname').value.trim();
-                    const bio = document.getElementById('bio').value.trim();
-                    
-                    fetch('/api/users/update_profile/', {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCsrfToken()
-                        },
-                        body: JSON.stringify({
-                            nickname: nickname,
-                            bio: bio
-                        })
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            showAlert('profileUpdateStatus', 'Profile updated successfully!', 'success');
-                            return response.json();
-                        } else {
-                            showAlert('profileUpdateStatus', 'Failed to update profile. Please try again.', 'danger');
-                            throw new Error('Failed to update profile');
-                        }
-                    })
-                    .then(data => {
-                        // Update UI with new data
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    })
-                    .catch(error => {
-                        console.error('Error updating profile:', error);
-                    });
-                });
-            }
-            
-            // Password change form
-            const passwordChangeForm = document.getElementById('passwordChangeForm');
-            if (passwordChangeForm) {
-                passwordChangeForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const oldPassword = document.getElementById('oldPassword').value;
-                    const newPassword = document.getElementById('newPassword').value;
-                    const confirmPassword = document.getElementById('confirmPassword').value;
-                    
-                    if (newPassword !== confirmPassword) {
-                        showAlert('passwordChangeStatus', 'New passwords do not match!', 'danger');
-                        return;
-                    }
-                    
-                    fetch('/api/users/change_password/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCsrfToken()
-                        },
-                        body: JSON.stringify({
-                            old_password: oldPassword,
-                            new_password: newPassword
-                        })
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            showAlert('passwordChangeStatus', 'Password changed successfully!', 'success');
-                            passwordChangeForm.reset();
-                        } else {
-                            return response.json().then(data => {
-                                let errorMsg = 'Failed to change password.';
-                                if (data.old_password) {
-                                    errorMsg = data.old_password[0];
-                                }
-                                showAlert('passwordChangeStatus', errorMsg, 'danger');
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error changing password:', error);
-                        showAlert('passwordChangeStatus', 'An error occurred. Please try again.', 'danger');
-                    });
-                });
-            }
-            
-            // Like functionality for posts
-            document.querySelectorAll('.btn-outline-primary').forEach(button => {
-                button.addEventListener('click', function() {
-                    const postId = this.closest('.card').getAttribute('data-post-id');
-                    if (postId) {
-                        fetch(`/api/posts/${postId}/like/`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': getCsrfToken()
-                            }
-                        })
-                        .then(response => {
-                            if (response.ok) {
-                                this.classList.toggle('active');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error liking post:', error);
-                        });
-                    }
-                });
-            });
+{% block extra_js %}
+<script>
+    // Process hashtags in post content after page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make hashtags clickable in post content
+        document.querySelectorAll('.post-content').forEach(function(element) {
+            element.innerHTML = element.innerHTML.replace(/#(\w+)/g, '<a href="/posts/?hashtag=$1" class="hashtag">#$1</a>');
         });
         
-        // Helper function to show alert messages
-        function showAlert(elementId, message, type) {
-            const alertElement = document.getElementById(elementId);
-            alertElement.textContent = message;
-            alertElement.className = `alert alert-${type} mt-3`;
-            alertElement.style.display = 'block';
-            
-            setTimeout(() => {
-                alertElement.style.display = 'none';
-            }, 5000);
-        }
-        
-        // Helper function to get CSRF token
-        function getCsrfToken() {
-            const csrfCookie = document.cookie.split(';')
-                .find(cookie => cookie.trim().startsWith('csrftoken='));
-            
-            if (csrfCookie) {
-                return csrfCookie.split('=')[1];
-            }
-            
-            // If no cookie found, try to find the token in a meta tag
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            if (csrfMeta) {
-                return csrfMeta.getAttribute('content');
-            }
-            
-            return document.querySelector('[name=csrfmiddlewaretoken]').value;
-        }
-    </script>
-</body>
-</html> 
+        // Toggle comments section
+        document.querySelectorAll('.comment-button').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const postId = button.getAttribute('data-post-id');
+                const commentsSection = document.getElementById('comments-' + postId);
+                if (commentsSection.style.display === 'none') {
+                    commentsSection.style.display = 'block';
+                } else {
+                    commentsSection.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 
