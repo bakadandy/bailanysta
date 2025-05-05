@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-!2r8s+e6-&dhw%&&k(fi_gmr9hm1d=x96ma4m90wfh-cq@b9p-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['bailanysta-011v.onrender.com', '.onrender.com', 'localhost', '127.0.0.1']
 
 # API keys from environment variables
 HUGGINGFACE_TOKEN = os.getenv('HUGGINGFACE_TOKEN', '')
