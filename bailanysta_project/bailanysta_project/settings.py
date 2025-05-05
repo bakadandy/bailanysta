@@ -96,7 +96,7 @@ WSGI_APPLICATION = 'bailanysta_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bailanysta',
+        'NAME': 'bailanysta_db',
         'USER': 'postgres',
         'PASSWORD': 'gigadandy',
         'HOST': 'localhost',
