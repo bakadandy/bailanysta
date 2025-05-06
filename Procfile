@@ -1,1 +1,1 @@
-web: python manage.py migrate --noinput && gunicorn bailanysta_project.bailanysta_project.wsgi --log-file -
+web: python bailanysta_project/manage.py migrate --noinput && gunicorn bailanysta_project.bailanysta_project.wsgi --log-file -
