@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url 
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,15 +27,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!2r8s+e6-&dhw%&&k(fi_gmr9hm1d=x96ma4m90wfh-cq@b9p-'
+# SECRET_KEY = 'django-insecure-!2r8s+e6-&dhw%&&k(fi_gmr9hm1d=x96ma4m90wfh-cq@b9p-'
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-insecure-secret-key-for-dev") 
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True" # Use environment variable, default to False
 
-ALLOWED_HOSTS = []
+
+# ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+
 
 # API keys from environment variables
 HUGGINGFACE_TOKEN = os.getenv('HUGGINGFACE_TOKEN', '')
+
 
 
 # Application definition
@@ -55,6 +64,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Add Whitenoise middleware HERE, right after SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -93,15 +104,25 @@ WSGI_APPLICATION = 'bailanysta_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'bailanysta_db',
+#         'USER': 'postgres',
+#         'PASSWORD': 'gigadandy',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bailanysta_db',
-        'USER': 'postgres',
-        'PASSWORD': 'gigadandy',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        # Reads the DATABASE_URL environment variable provided by Railway
+        default=os.getenv("DATABASE_URL"),
+        # Optional: Set connection pool settings
+        conn_max_age=600,
+        # Railway PostgreSQL often requires SSL
+        ssl_require=os.getenv("DATABASE_SSL_REQUIRE", "True") == "True"
+    )
 }
 
 
@@ -140,10 +161,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+# STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / "staticfiles_build" / "static"
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 # Media files (User uploads)
 MEDIA_URL = '/media/'
@@ -161,5 +186,16 @@ REST_FRAMEWORK = {
     ],
     # Other REST framework settings as needed
 }
+
+# Security settings for production (when DEBUG=False)
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True # Optional: Usually handled by Railway's load balancer, but good practice
+
+    # Optional: HSTS settings (use with caution, read docs first)
+    # SECURE_HSTS_SECONDS = 31536000 # e.g., 1 year
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # SECURE_HSTS_PRELOAD = True
 
 AUTH_USER_MODEL = 'users.User'

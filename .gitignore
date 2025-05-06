@@ -52,4 +52,7 @@ ehthumbs.db
 Desktop.ini
 
 # Environment variables
-.env 
+.env
+
+# Build artifacts
+staticfiles_build/ 

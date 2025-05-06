@@ -1,0 +1,1 @@
+web: gunicorn bailanysta_project.wsgi --log-file - 
