@@ -191,7 +191,10 @@ REST_FRAMEWORK = {
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True # Optional: Usually handled by Railway's load balancer, but good practice
+    # SECURE_SSL_REDIRECT = True # <-- Comment this out or remove it
+
+    # Tell Django to trust the X-Forwarded-Proto header from Railway's proxy
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
     # Optional: HSTS settings (use with caution, read docs first)
     # SECURE_HSTS_SECONDS = 31536000 # e.g., 1 year
