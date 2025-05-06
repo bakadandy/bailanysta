@@ -1,1 +1,1 @@
-web: python run.py
+web: python debug.py && gunicorn bailanysta_project.bailanysta_project.wsgi --log-file -
