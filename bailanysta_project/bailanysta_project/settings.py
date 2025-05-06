@@ -81,8 +81,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
 ]
 
-ROOT_URLCONF = 'bailanysta_project.urls'
-
+ROOT_URLCONF = 'bailanysta_project.bailanysta_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
