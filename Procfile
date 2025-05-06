@@ -1,1 +1,1 @@
-web: gunicorn bailanysta_project.bailanysta_project.wsgi --log-file -
+web: cd bailanysta_project && python manage.py migrate --noinput && cd .. && gunicorn bailanysta_project.bailanysta_project.wsgi --log-file -
